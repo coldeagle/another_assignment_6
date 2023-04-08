@@ -108,11 +108,14 @@ class SqlAlchemyRepository(AbstractRepository):
             self.delete_many(bookmarks)
 
     def delete_many(self, bookmarks: list[Bookmark]) -> None:
+
         if bookmarks:
             ids = list()
             for bookmark in bookmarks:
-                print(bookmark['id'])
-                ids.append(bookmark['id'])
+                try:
+                    ids.append(bookmark['id'])
+                except Exception as e:
+                    ids.append(bookmark.id)
 
             stmt = delete(Bookmark).where(Bookmark.id.in_(ids))
             self.Session.execute(stmt)
@@ -164,7 +167,6 @@ class SqlAlchemyRepository(AbstractRepository):
 
                 return 200
             except Exception as e:
-                print('exception')
                 print(e)
                 return 'Error', 400
 
@@ -175,15 +177,12 @@ class SqlAlchemyRepository(AbstractRepository):
             bookmarks = self.find_all(query)
 
         if bookmarks:
-            print('trying...')
-            print(bookmarks)
             return bookmarks[0]
         else:
             return None
 
     def find_all(self, query) -> list[Bookmark]:
         query = select(Bookmark) if query is None else query
-        print(query)
         bookmarks = self.Session.scalars(query).all()
 
         if bookmarks:

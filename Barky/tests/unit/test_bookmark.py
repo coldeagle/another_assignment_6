@@ -1,14 +1,34 @@
 import random
 from datetime import date, datetime, timedelta
 
+import pytest
+
+from barkylib.adapters.repository import SqlAlchemyRepository
 from barkylib.domain import events
 from barkylib.domain.models import Bookmark
+from sqlalchemy import create_engine, select, update, delete
 
 ok_urls = ["http://", "https://"]
 
+pytestmark = pytest.mark.usefixtures("mappers")
 
-def test_bookmark_title_is_unique():
-    pass
+
+def test_bookmark_title_is_unique(sqlite_session_factory):
+    session = sqlite_session_factory()
+    repo = SqlAlchemyRepository(session)
+    # arrange
+    created = datetime(2023, 8, 12)
+    edited = datetime(2023, 8, 12)
+
+    # act
+    bookmark = Bookmark(0, "test", "http://www.example/com", None, created, edited)
+    repo.add_one(bookmark)
+    try:
+        # trying to add a dup, this should fail
+        repo.add_one(bookmark)
+        assert False
+    except Exception as e:
+        assert True
 
 
 def test_new_bookmark_added_and_edited_times_are_the_same():

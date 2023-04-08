@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import time
@@ -17,12 +18,16 @@ pytest.register_assert_rewrite("tests.e2e.api_client")
 
 @pytest.fixture
 def session(file_sqlite_db):
+
     try:
-        #start_mappers()
-        yield sessionmaker(bind=file_sqlite_db)()
-        #clear_mappers()
+        clear_mappers()
     except Exception as e:
         print(e)
+
+    start_mappers()
+    yield sessionmaker(bind=file_sqlite_db)()
+    clear_mappers()
+    file_sqlite_db.dispose()
 
 
 @pytest.fixture
@@ -45,7 +50,7 @@ def in_memory_sqlite_db():
 
 @pytest.fixture
 def file_sqlite_db():
-    engine = create_engine(f"sqlite:///bookmarks_test.db")
+    engine = create_engine(config.get_sqlite_file_url())
     mapper_registry.metadata.create_all(engine)
     return engine
 
@@ -57,6 +62,11 @@ def sqlite_session_factory(in_memory_sqlite_db):
 
 @pytest.fixture
 def mappers():
+    try:
+        clear_mappers()
+    except Exception as e:
+        print(e)
+
     start_mappers()
     yield
     clear_mappers()

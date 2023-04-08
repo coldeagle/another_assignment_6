@@ -10,6 +10,8 @@ from barkylib.adapters import repository
 from barkylib.domain import commands
 from barkylib.services import handlers, unit_of_work
 
+#####
+# not adding any here because the handler is tested with the end to end test
 
 class FakeRepository(repository.AbstractRepository):
     def __init__(self, products):
